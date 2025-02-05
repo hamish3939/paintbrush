@@ -1,0 +1,7 @@
+# Copyright (c) 2024 The ZMK Contributors
+# SPDX-License-Identifier: MIT
+
+include:
+  - board: nice_nano_v2
+    shield: the_paintbrush_left nice_oled
+
