@@ -1,68 +1,29 @@
 name: Build Paintbrush Firmware
 
-on:
-  push:
-    paths:
-      - "config/**"
-      - "app/boards/shields/the_paintbrush/**"
-      - ".github/workflows/build.yml"
-  pull_request:
-    paths:
-      - "config/**"
-      - "app/boards/shields/the_paintbrush/**"
-
-concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: true
+on: [push, pull_request]
 
 jobs:
   build:
     runs-on: ubuntu-latest
     container:
       image: zmkfirmware/zmk-build-arm:3.5
-    strategy:
-      matrix:
-        include:
-          - board: nice_nano_v2
-            shield: the_paintbrush_left nice_oled
-            artifact_name: paintbrush-left
-          - board: nice_nano_v2
-            shield: the_paintbrush_right
-            artifact_name: paintbrush-right
-
     steps:
-      - name: Checkout Repository
+      - name: Checkout
         uses: actions/checkout@v4
         with:
           submodules: recursive
 
-      - name: Cache Dependencies
-        uses: actions/cache@v4
-        with:
-          path: |
-            ~/.cache/zephyr
-            ~/.cargo
-            ~/.rustup
-          key: ${{ runner.os }}-zmk-${{ hashFiles('west.yml') }}
-          restore-keys: |
-            ${{ runner.os }}-zmk-
-
-      - name: Initialize Zephyr
+      - name: Initialize West
         run: west init -l app
 
       - name: Update Modules
         run: west update
 
-      - name: Build Firmware
-        run: |
-          west build -p -b ${{ matrix.board }} \
-            -- -DSHIELD="${{ matrix.shield }}" \
-            -DZMK_CONFIG="/workspaces/zmk/config"
+      - name: Build Left Half
+        run: west build -p -b nice_nano_v2 -- -DSHIELD="the_paintbrush_left nice_oled"
 
-      - name: Upload Artifact
+      - name: Upload Left Firmware
         uses: actions/upload-artifact@v4
         with:
-          name: ${{ matrix.artifact_name }}
-          path: |
-            build/zephyr/zmk.uf2
-            build/zephyr/zmk.hex
+          name: paintbrush-left
+          path: build/zephyr/zmk.uf2
