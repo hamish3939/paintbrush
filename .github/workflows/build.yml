@@ -22,7 +22,7 @@ jobs:
       - name: Build Left Half
         run: west build -p -b nice_nano_v2 -- -DSHIELD="the_paintbrush_left nice_oled"
 
-      - name: Upload Left Firmware
+      - name: Upload Firmware
         uses: actions/upload-artifact@v4
         with:
           name: paintbrush-left
